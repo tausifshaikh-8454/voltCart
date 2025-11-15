@@ -1,38 +1,66 @@
 import { useEffect, useState } from 'react'
-import { Routes, Route, useNavigate } from "react-router";
-import Layout from './components/Layout'
+import { Routes, Route, useNavigate, useLocation } from "react-router";
+import Lenis from 'lenis';
+
+
 import HomePage from './Pages/Home/HomePage'
 import AboutPage from './Pages/About/AboutPage'
 import BlogPage from './Pages/Blogs/BlogPage';
-import Error404Page from './Pages/404Page/Error404Page';
+import BlogDetails from './Pages/BlogsDetails/BlogDetails';
 import Products from './Pages/Products_List/Products';
-import CartPage from './Pages/Cart/CartPage';
-import { ProdProvider } from './contexts/ProdProvider';
-import { ShippingDetProvider } from './contexts/ShippingDetProvider';
 import ProductDetail from './Pages/Product_Detail/ProductDetail';
-import TestPage from './Pages/Test/TestPage';
+import CartPage from './Pages/Cart/CartPage';
+import TestPage from './Pages/TestPage/TestPage';
 import Contact from './Pages/Contact/Contact';
 import CheckoutPage from './Pages/Checkout/CheckoutPage';
 import SearchListing from './Pages/SearchListingPage/SearchListing';
-import Lenis from 'lenis';
-import ScrollToTopFunc from './components/ScrollToTopFunc/ScrollToTopFunc';
 import IntersectionEx from './Pages/CounterTest/IntersectionEx';
-
+import HelpPage from './Pages/HelpPage/HelpPage';
 import PrivacyPolicy from './Pages/PrivacyPolicy/PrivacyPolicy';
 import CancellationPolicy from './Pages/CancellationPolicy/CancellationPolicy';
 import TermsOfUse from './Pages/TermsOfUse/TermsOfUse';
 import ShippingPolicy from './Pages/ShippingPolicy/ShippingPolicy';
 import SuccessPage from './Pages/SuccessPage/SuccessPage';
 import CancelPage from './Pages/CancelPage/CancelPage';
+import Error404Page from './Pages/404Page/Error404Page';
+
+import { ProdProvider } from './contexts/ProdProvider';
+import { ShippingDetProvider } from './contexts/ShippingDetProvider';
+import { CartTotalProvider } from './contexts/cartTotalProvider'
+import { OrderProvider } from './contexts/orderItemsProvider';
+
+import Layout from './components/Layout'
+import ScrollToTopFunc from './components/ScrollToTopFunc/ScrollToTopFunc';
 import Cursor from './components/Cursor/Cursor';
-import BlogDetails from './Pages/BlogsDetails/BlogDetails';
+
+
 
 
 const App = () => {
+  let location = useLocation();
 
-  let navigate = useNavigate();
+  const whiteBgPages = ['/search-listing', '/help-and-support', '/privacy-policy', '/cancellation-policy', '/terms-of-use', '/shipping-policy', '/order-cancel', '/order-successful', '/*'];
+
+  useEffect(() => {
+    const path = location.pathname;
+
+    const isProductDetail = path.startsWith("/products/") && path !== "/products";
+    const isBlogDetail = path.startsWith("/blogs/") && path !== "/blogs";
+    const allWhiteBgPages = !whiteBgPages.includes(path) && !isProductDetail && !isBlogDetail;
+    // console.log('location', location)
+    // console.log('check incl', !allWhiteBgPages)
+
+    if (!allWhiteBgPages) {
+      document.body.classList.add('whiteBgPages')
+    }
+    else {
+      document.body.classList.remove('whiteBgPages')
+    }
+  }, [location.pathname])
+
 
   const [loadingCart, setLoadingCart] = useState(true);
+  const [loadingOrder, setLoadingOrder] = useState(true);
   let [cartProducts, setCartProducts] = useState([
     // {
     //   id: 1,
@@ -44,6 +72,52 @@ const App = () => {
     // }
   ])
 
+  let [orderItems, setOrderItems] = useState([
+    // {
+    //   name: "Talib",
+    //   email_id: "shaikhtalib2705@gmail.com",
+    //   phone: "8787878787",
+    //   town_city: "Mumbai",
+    //   state: "Maharashtra",
+    //   pincode: 400070,
+    //   date: "05 May 2025",
+    //   prod_arr: ["SHADOW 5000mAh MagSafe Power Bank", "SHADOW 5000mAh MagSafe Power Bank"],
+    //   price: [500, 400],
+    //   quantity: [5, 2],
+    //   shipping_rate: 55,
+    //   total: 1200
+    // }
+  ])
+
+
+  const addOrderItems = ({
+    name, email_id, phone, town_city, state, pincode, date, prod_arr, price, quantity, shipping_rate, total
+  }) => {
+    setOrderItems([
+      ...orderItems, {
+        name: name,
+        email_id: email_id,
+        phone: phone,
+        town_city: town_city,
+        state: state,
+        pincode: pincode,
+        date: date,
+        prod_arr: prod_arr,
+        price: price,
+        quantity: quantity,
+        shipping_rate: shipping_rate,
+        total: total
+      }
+    ])
+  }
+
+
+
+  const [itemTotal, setItemTotal] = useState({ total: 0 })
+
+  const calculateTotal = (amt) => setItemTotal({ total: amt })
+
+  // console.log('itemTotal', itemTotal, typeof itemTotal)
 
   let [shippingDetails, setShippingDetails] = useState({
     first_name: "",
@@ -71,22 +145,25 @@ const App = () => {
 
   // >>>>>>>>>>>>>> Get Cart Items from Local Storage
   useEffect(() => {
-
     let getCartItems = JSON.parse(localStorage.getItem("cartItems"))
     setCartProducts(getCartItems || []);
     setLoadingCart(false)
-
   }, [])
 
 
   // >>>>>>>>>>>>>> Get Shipping Details from Local Storage
   useEffect(() => {
-
     let getShippingDetails = JSON.parse(localStorage.getItem("shippingDetails"))
     setShippingDetails(getShippingDetails || {});
-
   }, [])
 
+
+  // >>>>>>>>>>>>>> Get Order Items from Local Storage
+  useEffect(() => {
+    let getOrderItems = JSON.parse(localStorage.getItem("orderItems"))
+    setOrderItems(getOrderItems || []);
+    setLoadingOrder(false)
+  }, [])
 
 
   // >>>>>>>>>>>>>> Set Cart Item
@@ -101,9 +178,14 @@ const App = () => {
   }, [shippingDetails])
 
 
+  // >>>>>>>>>>>>>> Set Order Items
+  useEffect(() => {
+    localStorage.setItem("orderItems", JSON.stringify(orderItems));
+  }, [orderItems])
+
 
   const addToCartFunc = (cartItem) => {
-    // console.log('Added To CaRT')
+    // console.log('Added To Cart')
     setCartProducts((prevItem) => {
       let existingItem = prevItem.find((elem) => elem.id === cartItem.id)
       // console.log('existingItem', existingItem)
@@ -116,6 +198,10 @@ const App = () => {
 
     })
     // console.log(cartItem)
+  }
+
+  const clearCartFunc = () => {
+    setCartProducts([])
   }
 
 
@@ -154,6 +240,12 @@ const App = () => {
 
     animationFrame = requestAnimationFrame(raf);
 
+
+    // 👉 Make it accessible globally
+    window.lenis = lenis;
+
+
+
     return () => {
       cancelAnimationFrame(animationFrame); // ✅ Clean up
       lenis.destroy();
@@ -163,72 +255,87 @@ const App = () => {
   // >>>>>>>>>>>>>>>>>>> ENDS Initialize LENIS
 
 
-
   return (
     <>
 
+
+
       {/* <Cursor /> */}
 
-      <ProdProvider value={{ cartProducts, loadingCart, addToCartFunc, changeQuantityFunc, removeFromCartFunc }} >
+      <OrderProvider value={{ orderItems, loadingOrder, addOrderItems }} >
 
-        <ShippingDetProvider value={{ shippingDetails, addShippingDetails }}  >
+        <CartTotalProvider value={{ itemTotal, calculateTotal }}  >
 
-          <ScrollToTopFunc />
+          <ProdProvider value={{ cartProducts, loadingCart, addToCartFunc, changeQuantityFunc, removeFromCartFunc, clearCartFunc }} >
 
-          <Routes>
+            <ShippingDetProvider value={{ shippingDetails, addShippingDetails }}  >
 
-            <Route path='/' element={<Layout />}  >
-
-              <Route index element={<HomePage />} />
-
-              <Route path='/about-us' element={<AboutPage />} />
-
-              <Route path='/contact' element={<Contact />} />
-
-              <Route path='/search-listing' element={<SearchListing />} />
-
-              <Route path='/blogs' element={<BlogPage />} />
-
-              <Route path='/blogs/:slug' element={<BlogDetails/>} />
-
-              <Route path='/products' element={<Products />} />
-
-              <Route path='/products/:slug' element={<ProductDetail />} />
-
-              <Route path='/cart' element={<CartPage />} />
-
-              <Route path='/checkout' element={<CheckoutPage />} />
-
-              <Route path='/order-successful' element={<SuccessPage />} />
-
-              <Route path='/order-cancel' element={<CancelPage />} />
+              <ScrollToTopFunc />
 
 
-              {/* >>>>>>>>>>>>>>>>>>>>>>>>> Policy Pages */}
 
-              <Route path='/privacy-policy' element={<PrivacyPolicy />} />
+              <Routes  >
 
-              <Route path='/cancellation-policy' element={<CancellationPolicy />} />
+                <Route path='/' element={<Layout />} >
 
-              <Route path='/terms-of-use' element={<TermsOfUse />} />
+                  <Route index element={<HomePage />} />
 
-              <Route path='/shipping-policy' element={<ShippingPolicy />} />
+                  <Route path='/about-us' element={<AboutPage />} />
 
-              {/* <Route path='*' element={<Error404Page />} /> */}
+                  <Route path='/contact-us' element={<Contact />} />
 
-              <Route path='/counter-test-1' element={<IntersectionEx />} />
+                  <Route path='/blogs' element={<BlogPage />} />
 
-              <Route path='/test' element={<TestPage />} />
+                  <Route path='/blogs/:slug' element={<BlogDetails />} />
 
-            </Route>
+                  <Route path='/products' element={<Products />} />
 
-            <Route path='*' element={<Error404Page />} />
+                  <Route path='/products/:slug' element={<ProductDetail />} />
 
-          </Routes>
+                  <Route path='/cart' element={<CartPage />} />
 
-        </ShippingDetProvider>
+                  <Route path='/checkout' element={<CheckoutPage />} />
 
-      </ProdProvider>
+                  <Route path='/order-successful' element={<SuccessPage />} />
+
+                  <Route path='/order-cancel' element={<CancelPage />} />
+
+                  <Route path='/search-listing' element={<SearchListing />} />
+
+
+                  {/* >>>>>>>>>>>>>>>>>>>>>>>>> Policy Pages */}
+
+                  <Route path='/help-and-support' element={<HelpPage />} />
+
+                  <Route path='/privacy-policy' element={<PrivacyPolicy />} />
+
+                  <Route path='/cancellation-policy' element={<CancellationPolicy />} />
+
+                  <Route path='/terms-of-use' element={<TermsOfUse />} />
+
+                  <Route path='/shipping-policy' element={<ShippingPolicy />} />
+
+                  {/* <Route path='*' element={<Error404Page />} /> */}
+
+                  <Route path='/counter-test-1' element={<IntersectionEx />} />
+
+                  <Route path='/test' element={<TestPage />} />
+
+                </Route>
+
+                <Route path='*' element={<Error404Page />} />
+
+              </Routes>
+
+
+
+            </ShippingDetProvider>
+
+          </ProdProvider>
+
+        </CartTotalProvider>
+
+      </OrderProvider>
 
     </>
   )

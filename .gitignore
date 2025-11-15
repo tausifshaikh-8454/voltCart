@@ -16,6 +16,8 @@ dist-ssr
 text-notes/
 resource.txt
 updates.txt
+potentialIssuesForLive.txt
+
 
 # Editor directories and files
 .vscode/*
@@ -30,3 +32,6 @@ updates.txt
 
 # Ignore Windows system files
 desktop.ini
+
+# Additional Files and Folders
+

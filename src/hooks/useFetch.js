@@ -1,30 +1,29 @@
 import { useEffect, useState } from "react"
 
-
 const useFetch = (fetchURL) => {
     let [loader, setLoader] = useState(true);
     let [data, setData] = useState([])
     let [error, setError] = useState(null)
 
     useEffect(() => {
+        if (!fetchURL) return;
         try {
             const fetchingData = async () => {
+                // console.log('Fetching URL:', fetchURL);
                 setLoader(true);
                 let getData = await fetch(fetchURL);
                 let res = await getData.json();
+                // console.log('inside fetch', getData.text())
+                // console.log('get json', getData.json())
                 setData(res)
+                // console.log('res', res);
                 setLoader(false);
             }
-
             fetchingData();
-            // console.log('inside custom hook | Data', data)
-
         }
         catch (err) {
             setError(err.message)
-            // console.log('inside custom hook | Error msg', err.message)
         }
-
     }, [fetchURL])
 
     return { data, loader, error }

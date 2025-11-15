@@ -1,27 +1,27 @@
-import React from 'react'
+
+import SkeletonLoaderCardComp from './SkeletonLoaderCard/SkeletonLoaderCardComp'
+
 import './skeleton_loader.css'
+
 
 const Loader = () => {
     return (
         <>
-
             {/* >>>>>>>>>>>>>> In Cont */}
             <div className=" w-full flex justify-center items-center gap-[20px]  " >
 
-                {/* <span className="loader  " ></span> */}
-                <span className="loader  " ></span>
-                <span className="loader  " ></span>
-                <span className="loader  " ></span>
+                <SkeletonLoaderCardComp />
+                <SkeletonLoaderCardComp />
+                <SkeletonLoaderCardComp additionalClassName="tab:hidden " />
 
             </div>
 
             {/* >>>>>>>>>>>>>> In Cont */}
-            <div className=" w-full flex justify-center items-center gap-[20px] mt-[30px]  "  >
+            <div className=" w-full flex justify-center items-center gap-[20px]  " >
 
-                {/* <span className="loader  " ></span> */}
-                <span className="loader  " ></span>
-                <span className="loader  " ></span>
-                <span className="loader  " ></span>
+                <SkeletonLoaderCardComp />
+                <SkeletonLoaderCardComp />
+                <SkeletonLoaderCardComp additionalClassName="tab:hidden " />
 
             </div>
 

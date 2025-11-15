@@ -1,21 +1,33 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom';
+
+import { loadRazorpayScript } from '../../utils/loadRazorpay';
+import useDocumentTitle from '../../hooks/useDocumentTitle';
+import { useCart } from '../../contexts/ProdProvider';
+import { useCartTotal } from '../../contexts/cartTotalProvider';
+import { useOrder } from '../../contexts/orderItemsProvider';
+import { useShippingDetails } from '../../contexts/ShippingDetProvider';
+import CheckoutPageSpotlight from '../../components/CheckoutPage/CheckoutPageSpotlight';
 import BillingForm from '../../components/CheckoutPage/BillingForm/BillingForm';
 import YourOrderComp from '../../components/CheckoutPage/YourOrderComp/YourOrderComp';
-import { useCart } from '../../contexts/ProdProvider';
-import { useNavigate } from 'react-router-dom';
-import useDocumentTitle from '../../hooks/useDocumentTitle';
-import { loadRazorpayScript } from '../../utils/loadRazorpay';
-import CheckoutPageSpotlight from '../../components/CheckoutPage/CheckoutPageSpotlight';
+
 
 const CheckoutPage = () => {
     // >>>>>>>>>>>>>>>>> Change Document Title Dynamically
-    useDocumentTitle('Checkout - VoltCart');
-    const [orderProcessLoader, setOrderProcessLoader] = useState(false);
-    const [isDisabled, setIsDisabled] = useState(false)
-
-    let { cartProducts, loadingCart } = useCart()
+    useDocumentTitle('Secure Checkout | Complete Your Order Safely');
 
     let navigate = useNavigate();
+    let cartItemSubTotal = 0;
+    const [orderProcessLoader, setOrderProcessLoader] = useState(false);
+    const [isDisabled, setIsDisabled] = useState(false)
+    let { cartProducts, loadingCart } = useCart()
+    let { itemTotal, calculateTotal } = useCartTotal()
+    let { shippingDetails } = useShippingDetails();
+    let [shippingCharges, setShippingCharges] = useState(55);
+    let { orderItems, addOrderItems } = useOrder();
+
+    let get_months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'][new Date().getMonth()];
+    let date = `${new Date().getDate()} ${get_months} ${new Date().getFullYear()}`;
 
     useEffect(() => {
         if (!loadingCart && cartProducts.length === 0) navigate('/cart');
@@ -47,11 +59,9 @@ const CheckoutPage = () => {
 
     // >>>>>>>>>>>>>>>>>>>>> Form Validation
     const handlerPlaceOrder = async (e) => {
-
         e.preventDefault();
         setOrderProcessLoader(true);
         setIsDisabled(true)
-        console.log("Button CLicked");
 
         try {
             // 1️⃣ Ensure Razorpay SDK is loaded
@@ -118,7 +128,6 @@ const CheckoutPage = () => {
             }
 
             else {
-
                 setOrderProcessLoader(true);
                 setIsDisabled(true)
                 console.log('formData.first_name', formData.first_name)
@@ -129,13 +138,25 @@ const CheckoutPage = () => {
                 console.log('formData.stateInp', formData.stateInp)
                 console.log('formData.street_address', formData.street_address)
                 console.log('formData.town_cityInp', formData.town_cityInp)
+                console.log('cartProducts checkout', cartProducts)
 
-                // // const items = [
-                // //     { name: 'T-shirt', quantity: 2, price: 300 },
-                // //     { name: 'Shoes', quantity: 1, price: 1200 },
-                // // ];
+                addOrderItems({
+                    name: `${formData.first_name} ${formData.last_name}`,
+                    email_id: formData.email_address,
+                    phone: formData.phone_number,
+                    town_city: formData.town_cityInp,
+                    state: formData.stateInp,
+                    pincode: formData.pincodeInp,
+                    date: date,
+                    prod_arr: cartProducts.map(elem => elem.name),
+                    quantity: cartProducts.map(elem => elem.quantity),
+                    price: cartProducts.map(elem => elem.price),
+                    shipping_rate: shippingCharges,
+                    total: itemTotal.total
+                })
 
                 const items = cartProducts;
+                const totalAmt = itemTotal.total
                 const name = `${formData.first_name} ${formData.last_name}`;
 
                 const res = await fetch(import.meta.env.VITE_BACKEND_RAZORPAY_FETCH_URL, {
@@ -143,7 +164,7 @@ const CheckoutPage = () => {
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ items, name }),
+                    body: JSON.stringify({ items, name, totalAmt }),
                 });
 
                 const data = await res.json();
@@ -159,21 +180,18 @@ const CheckoutPage = () => {
                     amount: data.amount,
                     currency: data.currency,
                     name: 'VoltCart',
-                    description: 'Order Payment',
+                    description: 'Order Payment for VoltCart',
                     order_id: data.orderId,
                     handler: function (response) {
-                        // Redirect after payment success
-                        // window.location.href = `/success?payment_id=${response.razorpay_payment_id}`;
                         window.location.href = `/order-successful?payment_id=${response.razorpay_payment_id}&order_id=${response.razorpay_order_id}`;
                     },
                     prefill: {
-                        // name: data.name,
                         name: formData.first_name,
                         email: formData.email_address,
                         contact: formData.phone_number,
                     },
                     theme: {
-                        color: '#3399cc',
+                        color: '#0D6EFD',
                     },
                     modal: {
                         ondismiss: function () {
@@ -197,7 +215,6 @@ const CheckoutPage = () => {
                 })
 
                 return true;
-
             }
         }
         catch (err) {
@@ -212,32 +229,37 @@ const CheckoutPage = () => {
 
 
     return (
-
         <>
             <CheckoutPageSpotlight />
-            <div className="py-[100px]">
-                {/* >>>>>>>>>>>>>> In Cont */}
-                <div className="container_layout mx-auto flex justify-center items-center flex-col   "  >
 
-                    {/* <div className="cart_heading pb-[40px] "  >
-                        <h1 className=" text-3xl font-bold text-center ">Checkout</h1>
-                    </div> */}
+            <div className="  desktop:py-[100px] gt-tab:py-[80px] py-[60px] " >
+                {/* >>>>>>>>>>>>>> In Cont */}
+                <div className="container_layout mx-auto flex justify-center items-center flex-col "  >
 
                     <form onSubmit={handlerPlaceOrder} className='w-full' >
-                        <div className="cart_card_cont w-full px-[50px] flex gap-[35px] "  >
+                        <div className="cart_card_cont w-full flex gt-tab:flex-row flex-col desktop:gap-[35px] gt-tab:gap-[25px] gap-[35px] " >
 
-                            <div className=" w-[50%] flex flex-col gap-[15px]  "  >
+                            <div className=" gt-tab:w-[50%] w-full flex flex-col gap-[15px]  "  >
+                                <h3 className=' font-primary tab:text-[36px]/[44px] text-[30px]/[38px] font-[400] ' >Billing Details</h3>
                                 <BillingForm errorMsg={errorMsg} formData={formData} setFormData={setFormData} />
                             </div>
 
-                            <YourOrderComp isDisabled={isDisabled} orderProcessLoader={orderProcessLoader} />
+                            <YourOrderComp
+                                itemTotal={itemTotal}
+                                calculateTotal={calculateTotal}
+                                cartItemSubTotal={cartItemSubTotal}
+                                shippingDetails={shippingDetails}
+                                shippingCharges={shippingCharges}
+                                setShippingCharges={setShippingCharges}
+                                cartProducts={cartProducts}
+                                isDisabled={isDisabled}
+                                orderProcessLoader={orderProcessLoader}
+                            />
                         </div>
                     </form>
                 </div>
-
             </div>
         </>
-
     )
 }
 

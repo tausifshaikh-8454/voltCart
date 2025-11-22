@@ -1,7 +1,9 @@
-import { useLocation, Link } from 'react-router-dom'
-import './BreadStyle.css'
+import { useLocation, Link } from 'react-router-dom';
 
-const BreadCrumbs = ({ breadColor = "black" }) => {
+import './BreadStyle.css';
+
+
+const BreadCrumbs = ({ additionalColorClass = " text-black " }) => {
     const location = useLocation();
     let currentLink = '';
     let routeName = location.pathname.split('/').filter(rName => rName !== '');
@@ -9,18 +11,17 @@ const BreadCrumbs = ({ breadColor = "black" }) => {
         currentLink += `/${crumb}`;
         return (
             <span className='breadCrumbs ' key={index}>
-                <Link className={`text-[${breadColor}] `} to={currentLink}>{crumb}</Link>
+                <Link className={` ${additionalColorClass} `} to={currentLink}>{crumb}</Link>
             </span>
         );
     });
 
     return <nav className='relative z-[99] ' >
         <span className='breadCrumbs ' key='home' >
-            <Link className={`text-[${breadColor}] `} to='/'  >Home</Link>
+            <Link className={` ${additionalColorClass} `} to='/'  >Home</Link>
         </span>
         {crumbs}
     </nav>
-};
+}
 
-
-export default BreadCrumbs
+export default BreadCrumbs;

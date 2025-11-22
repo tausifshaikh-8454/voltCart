@@ -1,8 +1,8 @@
 import { useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 
-import BreadCrumbs from '../BreadCrumbs/BreadCrumbs'
 import spotlightImg from '../../assets/about-page/about_spotlight_main.webp'
+import BreadCrumbs from '../BreadCrumbs/BreadCrumbs'
 
 
 const AboutSpotlight = () => {
@@ -24,11 +24,11 @@ const AboutSpotlight = () => {
             <h1 className=" uppercase spot_title font-primary tab:text-[18px]/[24px] text-[16px]/[24px] text-white relative z-[99] pl-[10px] " >About Us</h1>
             <h3 className=" capitalize font-primary tab:w-[60%] w-full desktop:text-[90px]/[90px] gt-tab:text-[60px]/[60px] tab:text-[55px]/[55px] text-[45px]/[45px] font-[100] text-white mt-[14px] relative z-[99] " >About our brand</h3>
           </div>
-          <BreadCrumbs breadColor="#fff" />
+          <BreadCrumbs additionalColorClass=" text-white " />
         </div>
       </motion.div>
     </AnimatePresence>
   )
 }
 
-export default AboutSpotlight
+export default AboutSpotlight;

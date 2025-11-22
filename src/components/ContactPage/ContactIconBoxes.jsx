@@ -12,7 +12,7 @@ const ContactIconBoxes = () => {
                     <div className="">
                         <h5 className="font-primary font-[500] text-[20px]/[20px] pb-[10px] ">Location Address</h5>
                         <p className="font-body font-[400] text-[16px] ">
-                            Vinoba Bhave Nagar, Kurla (West), <br className=' gt-tab:block hidden  ' />Mumbai - 400070, Maharashtra
+                            Dongre compound, opp kausa jama masjid,<br className=' gt-tab:block hidden  ' />Kausa - Mumbra, Dist Thane, Maharashtra 400612.
                         </p>
                     </div>
                 </div>

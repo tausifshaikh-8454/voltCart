@@ -21,37 +21,47 @@ const SpotlightSlider = () => {
 
     let productsAPI = import.meta.env.VITE_PRODUCT_API_KEY;
     let { data: prodData } = useFetch(productsAPI)
-    let prices = [];
-    let percents = [];
-    prodData.map(elem => {
-        prices.push(elem.price.sale_price)
-        percents.push((parseInt(elem.price.reg_price - elem.price.sale_price) / elem.price.reg_price * 100).toFixed())
-    })
-    let saleMainPrice = prices.sort().slice(0, 1).join()
-    let mainPercentage = percents.sort().slice(-1).join()
+
+    const calculateSalePrice = (itemCat) => prodData.filter(elem => elem.category == itemCat).map(elem => elem.price.sale_price).sort().slice(0, 1).join();
+
+    const calculateSalePercent = (itemCat) => prodData
+        .filter(elem => elem.category == itemCat)
+        .map(elem => (parseInt(elem.price.reg_price - elem.price.sale_price) / elem.price.reg_price * 100).toFixed()).sort().slice(0, 1).join();
+
     let slides = [
         {
             title: "Shield Your Iphone in Style",
             subTitle: "Premium grip with all-round corner protection",
             source: subtleBgImg,
             objectImg: phoneCoverSpotImg,
-            objectImgAddClass: "gt-tab:max-w-[400px] tab:max-w-[300px] max-w-[240px] "
+            objectImgAddClass: "gt-tab:max-w-[400px] tab:max-w-[300px] max-w-[240px] ",
+            saleMainPrice: calculateSalePrice("Covers and Cases"),
+            mainPercentage: calculateSalePercent("Covers and Cases"),
+            linkToCat: '/products?category=covers_and_cases'
         },
         {
             title: "Stay Charged, Always Ready",
             subTitle: "LED battery indicators for smart usage",
             source: subtleBgImg,
             objectImg: powerBankSpotImg,
-            objectImgAddClass: " gt-tab:max-w-[500px] tab:max-w-[300px] max-w-[240px]  "
+            objectImgAddClass: " gt-tab:max-w-[500px] tab:max-w-[300px] max-w-[240px]  ",
+            saleMainPrice: calculateSalePrice("Power Banks"),
+            mainPercentage: calculateSalePercent("Power Banks"),
+            linkToCat: '/products?category=power_bank'
         },
         {
             title: "Redefine Your Wrist Game",
             subTitle: "Premium leather, silicone, and metal options",
             source: subtleBgImg,
             objectImg: watchesSpotImg,
-            objectImgAddClass: "gt-tab:max-w-[400px] tab:max-w-[300px] max-w-[240px] "
+            objectImgAddClass: "gt-tab:max-w-[400px] tab:max-w-[300px] max-w-[240px] ",
+            saleMainPrice: calculateSalePrice("Stand and Straps"),
+            mainPercentage: calculateSalePercent("Stand and Straps"),
+            linkToCat: '/products?category=stand_and_straps'
         }
     ];
+
+
 
     return (
         <div className=" bg-[#F6F6F6] home_pg_spotlight_slider ">
@@ -86,8 +96,11 @@ const SpotlightSlider = () => {
                                 objectImg={elem.objectImg}
                                 objectImgAddClass={elem.objectImgAddClass}
                                 dynBgColor={elem.dynBgColor}
-                                saleMainPrice={saleMainPrice}
-                                mainPercentage={mainPercentage}
+
+                                saleMainPrice={elem.saleMainPrice}
+                                mainPercentage={elem.mainPercentage}
+
+                                linkToCat={elem.linkToCat}
                             /> </SwiperSlide>
                     })
                 }
